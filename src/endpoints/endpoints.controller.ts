@@ -11,7 +11,7 @@ export class EndpointsController {
     return this.endpointsService.getAllEndpoints()
   }
 
-  @Get("/getEndpointById/:id")
+  @Get("/getEndpointsById/:id")
   getEndpointById(@Param('id') id: number) {
     return this.endpointsService.getEndpointById(id)
   }
