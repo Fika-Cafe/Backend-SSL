@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateUserDto } from './dto/create-user.dto'
+import { LoginUserDto } from './dto/login-user.dto'
 import * as bcrypt from 'bcrypt'
 
 @Injectable()
@@ -15,6 +16,41 @@ export class UsersService {
     }
 
     return users
+  }
+
+  async login(loginUserDto: LoginUserDto) {
+    const { email, password } = loginUserDto
+
+    try {
+      const findUser = await this.prisma.user.findFirst({
+        where: {
+          email
+        }
+      })
+
+      if (!findUser) {
+        throw new NotFoundException('Usuario no encontrado, favor de verificar el correo electrónico')
+      }
+
+      // Verificar la contraseña
+      const isPasswordValid = await bcrypt.compare(password, findUser.password)
+
+      if (!isPasswordValid) {
+        throw new NotFoundException('Contraseña incorrecta')
+      }
+
+      // Si la contraseña es válida, retornar el usuario
+      return {
+        message: 'Inicio de sesión exitoso',
+        user: {
+          id: findUser.id,
+          email: findUser.email,
+          name: findUser.name,
+        },
+      }
+    } catch (error) {
+      throw (error)
+    }
   }
 
   async createUser(createUserDto: CreateUserDto) {

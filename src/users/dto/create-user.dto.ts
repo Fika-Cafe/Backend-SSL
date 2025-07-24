@@ -21,15 +21,15 @@ export class MatchPasswordsConstraint implements ValidatorConstraintInterface {
 }
 
 export class CreateUserDto {
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'El nombre es obligatorio.' })
   name: string
 
-  @IsEmail()
-  @IsNotEmpty()
+  @IsEmail({}, { message: 'El correo electrónico no es válido.' })
+  @IsNotEmpty({ message: 'El correo electrónico es obligatorio.' })
   email: string
 
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: 'La contraseña debe ser una cadena de texto.' })
+  @IsNotEmpty({ message: 'La contraseña es obligatoria.' })
   password: string
 
   @IsString()
