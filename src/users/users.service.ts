@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { LoginUserDto } from './dto/login-user.dto'
@@ -19,27 +19,23 @@ export class UsersService {
   }
 
   async login(loginUserDto: LoginUserDto) {
-    const { email, password } = loginUserDto
+    const { email, password } = loginUserDto;
 
     try {
       const findUser = await this.prisma.user.findFirst({
-        where: {
-          email
-        }
-      })
+        where: { email },
+      });
 
       if (!findUser) {
-        throw new NotFoundException('Usuario no encontrado, favor de verificar el correo electrónico')
+        throw new NotFoundException('Usuario no encontrado');
       }
 
-      // Verificar la contraseña
-      const isPasswordValid = await bcrypt.compare(password, findUser.password)
+      const isPasswordValid = await bcrypt.compare(password, findUser.password);
 
       if (!isPasswordValid) {
-        throw new NotFoundException('Contraseña incorrecta')
+        throw new NotFoundException('Contraseña incorrecta');
       }
 
-      // Si la contraseña es válida, retornar el usuario
       return {
         message: 'Inicio de sesión exitoso',
         user: {
@@ -47,9 +43,14 @@ export class UsersService {
           email: findUser.email,
           name: findUser.name,
         },
-      }
+      };
     } catch (error) {
-      throw (error)
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      // Para otros errores (conexión, base de datos, etc.)
+      throw new InternalServerErrorException('Error inesperado al iniciar sesión');
     }
   }
 
